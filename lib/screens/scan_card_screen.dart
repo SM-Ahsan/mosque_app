@@ -79,9 +79,6 @@ class _ScanPageState extends State<ScanPage> {
           );
         });
       }, onDone: () {
-        if(_readers.isEmpty){
-          showSnackBar("No reader discovered!");
-        }
         setState(() {
           _discoverReaderSub = null;
           _readers = const [];
@@ -104,18 +101,24 @@ class _ScanPageState extends State<ScanPage> {
     await _tryConnectReader(terminal, reader).then((value) {
       final connectedReader = value;
       if (connectedReader == null) {
-        throw Exception("Error connecting to reader ! Please try again");
+        showSnackBar(
+            'Error connecting to reader ! Please try again');
+
+        // throw Exception("Error connecting to reader ! Please try again");
       }
       _reader = connectedReader;
       showSnackBar(
-          'Connected to a device: ${connectedReader.label ?? connectedReader.serialNumber}');
+          'Connected to a device: ${connectedReader?.label ?? connectedReader?.serialNumber}');
     });
   }
 
   Future<Reader?> _tryConnectReader(Terminal terminal, Reader reader) async {
     String? getLocationId() {
       final locationId = _selectedLocation?.id ?? reader.locationId;
-      if (locationId == null) throw AssertionError('Missing location');
+      if (locationId == null) {
+        showSnackBar(
+            'Missing location');
+      }
 
       return locationId;
     }
@@ -179,37 +182,34 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   Future<void> initTerminal() async {
-   getConnectionToken().then((connectionToken){
-      Terminal.getInstance(
-        shouldPrintLogs: false,
-        fetchToken: () async {
-          return connectionToken;
-        },
-      ).then((terminal){
-        _terminal = terminal;
-        showSnackBar("Initialized Stripe Terminal");
-        _startDiscoverReaders(terminal);
-
-
-        _onConnectionStatusChangeSub =
-            terminal.onConnectionStatusChange.listen((status) {
-              print('Connection Status Changed: ${status.name}');
-              _connectionStatus = status;
-              scanStatus = _connectionStatus.name;
-            });
-        _onUnexpectedReaderDisconnectSub =
-            terminal.onUnexpectedReaderDisconnect.listen((reader) {
-              print('Reader Unexpected Disconnected: ${reader.label}');
-            });
-        _onPaymentStatusChangeSub = terminal.onPaymentStatusChange.listen((status) {
-          print('Payment Status Changed: ${status.name}');
-          _paymentStatus = status;
-        });
-        if (_terminal == null) {
-          print('Please try again later!');
-        }
+    final connectionToken = await getConnectionToken();
+    final terminal = await Terminal.getInstance(
+      shouldPrintLogs: false,
+      fetchToken: () async {
+        return connectionToken;
+      },
+    ).then((terminal){
+      _terminal = terminal;
+      showSnackBar("Initialized Stripe Terminal");
+      _onConnectionStatusChangeSub =
+          terminal.onConnectionStatusChange.listen((status) {
+            print('Connection Status Changed: ${status.name}');
+            _connectionStatus = status;
+            scanStatus = _connectionStatus.name;
+          });
+      _onUnexpectedReaderDisconnectSub =
+          terminal.onUnexpectedReaderDisconnect.listen((reader) {
+            print('Reader Unexpected Disconnected: ${reader.label}');
+          });
+      _onPaymentStatusChangeSub = terminal.onPaymentStatusChange.listen((status) {
+        print('Payment Status Changed: ${status.name}');
+        _paymentStatus = status;
       });
+      if (_terminal == null) {
+        print('Please try again later!');
+      }
 
+      _startDiscoverReaders(terminal);
     });
   }
 

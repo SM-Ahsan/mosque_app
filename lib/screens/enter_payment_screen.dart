@@ -37,6 +37,8 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
   }
 
   Future<bool> _createPaymentIntent(Terminal terminal, String amount) async {
+    showSnackBar("Creating payment intent...");
+
     final paymentIntent =
         await terminal.createPaymentIntent(PaymentIntentParameters(
       amount:
@@ -55,6 +57,8 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
 
   Future<bool> _collectPaymentMethod(
       Terminal terminal, PaymentIntent paymentIntent) async {
+    showSnackBar("Collecting payment method...");
+
     final collectingPaymentMethod = terminal.collectPaymentMethod(
       paymentIntent,
       skipTipping: true,

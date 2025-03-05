@@ -10,8 +10,6 @@ class Constants {
 
 
 
-
-
   static Future<bool> checkInternetConnection() async {
     try {
       final result = await InternetAddress.lookup('google.com');
