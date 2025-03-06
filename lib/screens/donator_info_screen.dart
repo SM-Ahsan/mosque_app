@@ -5,7 +5,7 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:mosque_donation_app/constants.dart';
 import 'package:mosque_donation_app/models/model_post_donation_info.dart';
 import 'package:mosque_donation_app/providers/main_provider.dart';
-import 'package:mosque_donation_app/screens/scan_card_screen.dart';
+import 'package:mosque_donation_app/screens/enter_payment_screen.dart';
 import 'package:mosque_donation_app/utils/app_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
@@ -62,7 +62,7 @@ class _DonatorInfoScreenState extends State<DonatorInfoScreen> {
         var body = jsonDecode(provider.mResponse.body);
         if (provider.isSuccess) {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => ScanPage(modelPostDonationInfo: modelPostDonationInfo,)));
+              context, MaterialPageRoute(builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo,)));
         } else {
           String message = (body["message"]).toString();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -352,7 +352,7 @@ class _DonatorInfoScreenState extends State<DonatorInfoScreen> {
                                 if (validatePostDonatorInfo()) {
                                   // _postDonatorInfo();
                                   Navigator.push(
-                                      context, MaterialPageRoute(builder: (context) => ScanPage(modelPostDonationInfo: modelPostDonationInfo,)));
+                                      context, MaterialPageRoute(builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo,)));
                                 }
                               },
                               style: ButtonStyle(

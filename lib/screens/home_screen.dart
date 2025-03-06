@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:mosque_donation_app/constants.dart';
 import 'package:mosque_donation_app/models/model_categories.dart';
+import 'package:mosque_donation_app/models/model_post_donation_info.dart';
 import 'package:mosque_donation_app/providers/main_provider.dart';
 import 'package:mosque_donation_app/screens/donator_info_screen.dart';
-import 'package:mosque_donation_app/screens/scan_card_screen.dart';
+import 'package:mosque_donation_app/screens/enter_payment_screen.dart';
 import 'package:mosque_donation_app/utils/app_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer/sizer.dart';
@@ -877,10 +878,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 6.h,
                           child: ElevatedButton(
                             onPressed: () {
+                              ModelPostDonationInfo modelPostDonationInfo = ModelPostDonationInfo();
+                              modelPostDonationInfo.categoryId = selectedCategoryId;
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => ScanPage()));
+                                      builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo)));
                             },
                             style: ButtonStyle(
                               shape: WidgetStateProperty.all<
@@ -1057,10 +1060,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 8.h,
                           child: ElevatedButton(
                             onPressed: () {
+                              ModelPostDonationInfo modelPostDonationInfo = ModelPostDonationInfo();
+                              modelPostDonationInfo.categoryId = selectedCategoryId;
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => ScanPage()));
+                                      builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo)));
                             },
                             style: ButtonStyle(
                               shape: WidgetStateProperty.all<
@@ -1237,10 +1242,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               height: 6.h,
                               child: ElevatedButton(
                                 onPressed: () {
+                                  ModelPostDonationInfo modelPostDonationInfo = ModelPostDonationInfo();
+                                  modelPostDonationInfo.categoryId = selectedCategoryId;
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ScanPage()));
+                                          builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo)));
                                 },
                                 style: ButtonStyle(
                                   shape: WidgetStateProperty.all<
@@ -1417,10 +1424,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               height: 8.h,
                               child: ElevatedButton(
                                 onPressed: () {
+                                  ModelPostDonationInfo modelPostDonationInfo = ModelPostDonationInfo();
+                                  modelPostDonationInfo.categoryId = selectedCategoryId;
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => ScanPage()));
+                                          builder: (context) => EnterPaymentScreen(modelPostDonationInfo: modelPostDonationInfo)));
                                 },
                                 style: ButtonStyle(
                                   shape: WidgetStateProperty.all<

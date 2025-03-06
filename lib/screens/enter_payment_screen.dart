@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:mek_stripe_terminal/mek_stripe_terminal.dart';
 import 'package:mosque_donation_app/models/model_post_donation_info.dart';
 import 'package:mosque_donation_app/screens/payment_confirmation_screen.dart';
+import 'package:mosque_donation_app/screens/scan_card_screen.dart';
 import 'package:mosque_donation_app/utils/app_utils.dart';
 import 'package:sizer/sizer.dart';
 
 class EnterPaymentScreen extends StatefulWidget {
-  final Terminal terminal;
+  // final Terminal terminal;
   final ModelPostDonationInfo modelPostDonationInfo;
 
-  const EnterPaymentScreen({super.key, required this.terminal, required this.modelPostDonationInfo});
+  const EnterPaymentScreen({super.key, /*required this.terminal,*/ required this.modelPostDonationInfo});
 
   @override
   State<EnterPaymentScreen> createState() => _EnterPaymentScreenState();
@@ -18,16 +18,16 @@ class EnterPaymentScreen extends StatefulWidget {
 class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
   var donationCustomAmountController = TextEditingController();
   int donationFixedAmountSelected = 0;
-  bool _isPaymentSuccessful = false;
-  PaymentIntent? _paymentIntent;
-  final _formKey = GlobalKey<FormState>();
+  // bool _isPaymentSuccessful = false;
+  // PaymentIntent? _paymentIntent;
+  // final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showSnackBar("Connected");
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+      // showSnackBar("Connected");
+    // });
   }
 
   @override
@@ -36,86 +36,117 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
     super.dispose();
   }
 
-  Future<bool> _createPaymentIntent(Terminal terminal, String amount) async {
-    showSnackBar("Creating payment intent...");
+  // Future<bool> _createPaymentIntent(Terminal terminal, String amount) async {
+  //   showSnackBar("Creating payment intent...");
+  //
+  //   try {
+  //     final paymentIntent =
+  //     await terminal.createPaymentIntent(PaymentIntentParameters(
+  //       amount:
+  //       (double.parse(double.parse(amount).toStringAsFixed(2)) * 100).ceil(),
+  //       currency: "GBP",
+  //       captureMethod: CaptureMethod.automatic,
+  //       paymentMethodTypes: [PaymentMethodType.cardPresent],
+  //     ));
+  //     _paymentIntent = paymentIntent;
+  //     if (_paymentIntent == null) {
+  //       showSnackBar('Payment intent is not created!');
+  //     }
+  //   }
+  //   catch(e){
+  //     showSnackBar("Payment Intent error: $e");
+  //   }
+  //
+  //   return await _collectPaymentMethod(terminal, _paymentIntent!);
+  // }
+  //
+  // Future<bool> _collectPaymentMethod(
+  //     Terminal terminal, PaymentIntent paymentIntent) async {
+  //   showSnackBar("Collecting payment method...");
+  //
+  //   final collectingPaymentMethod = terminal.collectPaymentMethod(
+  //     paymentIntent,
+  //     skipTipping: true,
+  //   );
+  //
+  //   try {
+  //     final paymentIntentWithPaymentMethod = await collectingPaymentMethod;
+  //     _paymentIntent = paymentIntentWithPaymentMethod;
+  //     await _confirmPaymentIntent(terminal, _paymentIntent!).then((value) {});
+  //     return true;
+  //   } on TerminalException catch (exception) {
+  //     switch (exception.code) {
+  //       case TerminalExceptionCode.canceled:
+  //         showSnackBar('Collecting Payment method is cancelled! Exception: ${exception.message}');
+  //         return false;
+  //       default:
+  //         rethrow;
+  //     }
+  //   }
+  // }
+  //
+  // Future<void> _confirmPaymentIntent(
+  //     Terminal terminal, PaymentIntent paymentIntent) async {
+  //   try {
+  //     showSnackBar('Processing!');
+  //
+  //     final processedPaymentIntent =
+  //         await terminal.confirmPaymentIntent(paymentIntent);
+  //     _paymentIntent = processedPaymentIntent;
+  //     // Show the animation for a while and then reset the state
+  //     Future.delayed(const Duration(seconds: 3), () {
+  //       setState(() {
+  //         _isPaymentSuccessful = false;
+  //       });
+  //     });
+  //     setState(() {
+  //       _isPaymentSuccessful = true;
+  //     });
+  //     showSnackBar('Payment processed!');
+  //     Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //             builder: (context) => const PaymentConfirmationScreen(
+  //                   paymentStatus: true,
+  //                 )));
+  //   } catch (e) {
+  //     showSnackBar('Inside collect payment exception ${e.toString()}');
+  //     Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //             builder: (context) => const PaymentConfirmationScreen(
+  //                   paymentStatus: false,
+  //                 )));
+  //     print(e.toString());
+  //   }
+  //   // navigate to payment success screen
+  // }
+  //
+  // void _collectPayment() async {
+  //   // if (_formKey.currentState!.validate()) {
+  //   try {
+  //     showSnackBar("Terminal Connected: ${widget.terminal.getConnectedReader()}");
+  //     bool status = await _createPaymentIntent(
+  //         widget.terminal, donationFixedAmountSelected.toString());
+  //       if (status) {
+  //         showSnackBar('Payment Collected: $donationFixedAmountSelected');
+  //       } else {
+  //         Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //                 builder: (context) =>
+  //                 const PaymentConfirmationScreen(
+  //                   paymentStatus: false,
+  //                 )));
+  //         showSnackBar('Payment Cancelled');
+  //       }
+  //     }
+  //     catch(e){
+  //       showSnackBar("Collect Payment Exception: $e");
+  //     }
+  //   // }
+  // }
 
-    final paymentIntent =
-        await terminal.createPaymentIntent(PaymentIntentParameters(
-      amount:
-          (double.parse(double.parse(amount).toStringAsFixed(2)) * 100).ceil(),
-      currency: "GBP",
-      captureMethod: CaptureMethod.automatic,
-      paymentMethodTypes: [PaymentMethodType.cardPresent],
-    ));
-    _paymentIntent = paymentIntent;
-    if (_paymentIntent == null) {
-      showSnackBar('Payment intent is not created!');
-    }
-
-    return await _collectPaymentMethod(terminal, _paymentIntent!);
-  }
-
-  Future<bool> _collectPaymentMethod(
-      Terminal terminal, PaymentIntent paymentIntent) async {
-    showSnackBar("Collecting payment method...");
-
-    final collectingPaymentMethod = terminal.collectPaymentMethod(
-      paymentIntent,
-      skipTipping: true,
-    );
-
-    try {
-      final paymentIntentWithPaymentMethod = await collectingPaymentMethod;
-      _paymentIntent = paymentIntentWithPaymentMethod;
-      await _confirmPaymentIntent(terminal, _paymentIntent!).then((value) {});
-      return true;
-    } on TerminalException catch (exception) {
-      switch (exception.code) {
-        case TerminalExceptionCode.canceled:
-          showSnackBar('Collecting Payment method is cancelled!');
-          return false;
-        default:
-          rethrow;
-      }
-    }
-  }
-
-  Future<void> _confirmPaymentIntent(
-      Terminal terminal, PaymentIntent paymentIntent) async {
-    try {
-      showSnackBar('Processing!');
-
-      final processedPaymentIntent =
-          await terminal.confirmPaymentIntent(paymentIntent);
-      _paymentIntent = processedPaymentIntent;
-      // Show the animation for a while and then reset the state
-      Future.delayed(const Duration(seconds: 3), () {
-        setState(() {
-          _isPaymentSuccessful = false;
-        });
-      });
-      setState(() {
-        _isPaymentSuccessful = true;
-      });
-      showSnackBar('Payment processed!');
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const PaymentConfirmationScreen(
-                    paymentStatus: true,
-                  )));
-    } catch (e) {
-      showSnackBar('Inside collect payment exception ${e.toString()}');
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const PaymentConfirmationScreen(
-                    paymentStatus: false,
-                  )));
-      print(e.toString());
-    }
-    // navigate to payment success screen
-  }
 
   void showSnackBar(String message) {
     ScaffoldMessenger.of(context)
@@ -124,24 +155,6 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
         behavior: SnackBarBehavior.floating,
         content: Text(message),
       ));
-  }
-
-  void _collectPayment() async {
-    if (_formKey.currentState!.validate()) {
-      bool status = await _createPaymentIntent(
-          widget.terminal, donationFixedAmountSelected.toString());
-      if (status) {
-        showSnackBar('Payment Collected: $donationFixedAmountSelected');
-      } else {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const PaymentConfirmationScreen(
-                      paymentStatus: false,
-                    )));
-        showSnackBar('Payment Cancelled');
-      }
-    }
   }
 
   @override
@@ -412,7 +425,8 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
                         onSubmitted: (value) {
                           donationFixedAmountSelected = int.parse(
                               donationCustomAmountController.text.toString());
-                          _collectPayment();
+
+                          // _collectPayment();
                         },
                         style: TextStyle(
                             color: Colors.black,
@@ -437,7 +451,13 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
                     donationFixedAmountSelected = int.parse(
                         donationCustomAmountController.text.toString());
                   }
-                  showTapToPayPopup();
+
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ScanPage(modelPostDonationInfo: widget.modelPostDonationInfo, donationAmount: donationFixedAmountSelected.toString(),)));
+
+                  // showTapToPayPopup();
                 },
                 style: ButtonStyle(
                   shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -464,8 +484,6 @@ class _EnterPaymentScreenState extends State<EnterPaymentScreen> {
   }
 
   Future showTapToPayPopup() {
-    _collectPayment();
-
     return showDialog(
         context: context,
         builder: (BuildContext context) {

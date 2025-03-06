@@ -9,14 +9,17 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:mosque_donation_app/constants.dart';
 import 'package:mosque_donation_app/models/model_post_donation_info.dart';
 import 'package:mosque_donation_app/screens/enter_payment_screen.dart';
+import 'package:mosque_donation_app/screens/payment_confirmation_screen.dart';
 import 'package:mosque_donation_app/utils/app_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sizer/sizer.dart';
 
 class ScanPage extends StatefulWidget {
   final ModelPostDonationInfo? modelPostDonationInfo;
+  final String donationAmount;
 
-  const ScanPage({super.key, this.modelPostDonationInfo});
+
+  const ScanPage({super.key, this.modelPostDonationInfo, required this.donationAmount});
 
   @override
   _ScanPageState createState() => _ScanPageState();
@@ -67,16 +70,19 @@ class _ScanPageState extends State<ScanPage> {
           setState(() {
             showSpinner = false;
           });
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => EnterPaymentScreen(
-                  modelPostDonationInfo:
-                  widget.modelPostDonationInfo ??
-                      ModelPostDonationInfo(),
-                  terminal: _terminal!,
-                )),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //       builder: (context) => EnterPaymentScreen(
+          //         modelPostDonationInfo:
+          //         widget.modelPostDonationInfo ??
+          //             ModelPostDonationInfo(),
+          //         terminal: _terminal!,
+          //       )),
+          // );
+
+          //ToDo Calling Payment intent from here:
+          _collectPayment();
         });
       }, onDone: () {
         setState(() {
@@ -108,7 +114,7 @@ class _ScanPageState extends State<ScanPage> {
       }
       _reader = connectedReader;
       showSnackBar(
-          'Connected to a device: ${connectedReader?.label ?? connectedReader?.serialNumber}');
+          'Connected to the reader: ${connectedReader?.label ?? connectedReader?.serialNumber}');
     });
   }
 
@@ -190,7 +196,7 @@ class _ScanPageState extends State<ScanPage> {
       },
     ).then((terminal){
       _terminal = terminal;
-      showSnackBar("Initialized Stripe Terminal");
+      // showSnackBar("Initialized Stripe Terminal");
       _onConnectionStatusChangeSub =
           terminal.onConnectionStatusChange.listen((status) {
             print('Connection Status Changed: ${status.name}');
@@ -222,15 +228,135 @@ class _ScanPageState extends State<ScanPage> {
       ));
   }
 
+
+  bool _isPaymentSuccessful = false;
+  PaymentIntent? _paymentIntent;
+  final _formKey = GlobalKey<FormState>();
+
+
+  Future<bool> _createPaymentIntent(Terminal terminal, String amount) async {
+    showSnackBar("Creating payment intent...");
+
+    try {
+      final paymentIntent =
+      await terminal.createPaymentIntent(PaymentIntentParameters(
+        amount:
+        (double.parse(double.parse(amount).toStringAsFixed(2)) * 100).ceil(),
+        currency: "GBP",
+        captureMethod: CaptureMethod.automatic,
+        paymentMethodTypes: [PaymentMethodType.cardPresent],
+      ));
+      _paymentIntent = paymentIntent;
+      if (_paymentIntent == null) {
+        showSnackBar('Payment intent is not created!');
+      }
+    }
+    catch(e){
+      showSnackBar("Payment Intent error: $e");
+    }
+
+    return await _collectPaymentMethod(terminal, _paymentIntent!);
+  }
+
+  Future<bool> _collectPaymentMethod(
+      Terminal terminal, PaymentIntent paymentIntent) async {
+    showSnackBar("Collecting payment method...");
+
+    final collectingPaymentMethod = terminal.collectPaymentMethod(
+      paymentIntent,
+      skipTipping: true,
+    );
+
+    try {
+      final paymentIntentWithPaymentMethod = await collectingPaymentMethod;
+      _paymentIntent = paymentIntentWithPaymentMethod;
+      await _confirmPaymentIntent(terminal, _paymentIntent!).then((value) {});
+      return true;
+    } on TerminalException catch (exception) {
+      switch (exception.code) {
+        case TerminalExceptionCode.canceled:
+          showSnackBar('Collecting Payment method is cancelled! Exception: ${exception.message}');
+          return false;
+        default:
+          rethrow;
+      }
+    }
+  }
+
+  Future<void> _confirmPaymentIntent(
+      Terminal terminal, PaymentIntent paymentIntent) async {
+    try {
+      showSnackBar('Processing!');
+
+      final processedPaymentIntent =
+      await terminal.confirmPaymentIntent(paymentIntent);
+      _paymentIntent = processedPaymentIntent;
+      // Show the animation for a while and then reset the state
+      Future.delayed(const Duration(seconds: 3), () {
+        setState(() {
+          _isPaymentSuccessful = false;
+        });
+      });
+      setState(() {
+        _isPaymentSuccessful = true;
+      });
+      showSnackBar('Payment processed!');
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const PaymentConfirmationScreen(
+                paymentStatus: true,
+              )));
+    } catch (e) {
+      showSnackBar('Inside collect payment exception ${e.toString()}');
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const PaymentConfirmationScreen(
+                paymentStatus: false,
+              )));
+      print(e.toString());
+    }
+    // navigate to payment success screen
+  }
+
+  void _collectPayment() async {
+    // if (_formKey.currentState!.validate()) {
+    try {
+      showSnackBar("Terminal Connected: ${_terminal?.getConnectedReader()}");
+      bool status = await _createPaymentIntent(
+          _terminal!, widget.donationAmount);
+      if (status) {
+        showSnackBar('Payment Collected: 10');
+      } else {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                const PaymentConfirmationScreen(
+                  paymentStatus: false,
+                )));
+        showSnackBar('Payment Cancelled');
+      }
+    }
+    catch(e){
+      showSnackBar("Collect Payment Exception: $e");
+    }
+    // }
+  }
+
+
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showSnackBar("Wait initializing Stripe Terminal");
+      // showSnackBar("Wait initializing Stripe Terminal");
     });
 
     _initTerminal();
   }
+
 
   @override
   void dispose() {
@@ -291,16 +417,18 @@ class _ScanPageState extends State<ScanPage> {
                                 setState(() {
                                   showSpinner = false;
                                 });
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => EnterPaymentScreen(
-                                            modelPostDonationInfo:
-                                                widget.modelPostDonationInfo ??
-                                                    ModelPostDonationInfo(),
-                                            terminal: _terminal!,
-                                          )),
-                                );
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(
+                                //       builder: (context) => EnterPaymentScreen(
+                                //             modelPostDonationInfo:
+                                //                 widget.modelPostDonationInfo ??
+                                //                     ModelPostDonationInfo(),
+                                //             terminal: _terminal!,
+                                //           )),
+                                // );
+                                //ToDo Calling Payment intent from here:
+                                _collectPayment();
                               });
                             },
                             child: Text(
